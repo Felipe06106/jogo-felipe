@@ -48,11 +48,19 @@
     // Menu state
     let menuSelectedLevel = 0;
     let menuAction = 'play'; // 'play' or 'shop'
+    let menuCooldown = 0; // prevents residual clicks from triggering menu actions
 
     function update(dt) {
         const scene = SceneManager.currentScene;
 
         if (scene === 'menu') {
+            // Cooldown to prevent the click that brought us here from triggering an action
+            if (menuCooldown > 0) {
+                menuCooldown -= dt;
+                InputManager.consumeClick();
+                InputManager.endFrame();
+                return;
+            }
             // Level selection
             if (InputManager.isDown('ArrowLeft') || InputManager.isDown('KeyA')) {
                 menuSelectedLevel = Math.max(0, menuSelectedLevel - 1);
@@ -109,10 +117,14 @@
         } else if (scene === 'gameOver') {
             if (InputManager.wasClicked()) {
                 SceneManager.change('menu');
+                menuCooldown = 0.3;
+                InputManager.consumeClick();
             }
         } else if (scene === 'levelComplete') {
             if (InputManager.wasClicked()) {
                 SceneManager.change('menu');
+                menuCooldown = 0.3;
+                InputManager.consumeClick();
             }
         }
 
